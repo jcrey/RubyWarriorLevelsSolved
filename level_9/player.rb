@@ -4,7 +4,7 @@ class Player
 
 		@health = 20
 		@lastHealthLevel = 20
-		@minHealth = 6
+		@minHealth = 4
 		@timesAttackedContinuously = 0
 		@stepsBack = 0
 		@maxStepsBack = 3
@@ -18,7 +18,7 @@ class Player
 	
 	def play_turn(warrior)
 
-		
+
 		if warrior.health < @lastHealthLevel
 			@timesAttackedContinuously += 1
 			@lastHealthLevel = warrior.health
@@ -26,7 +26,7 @@ class Player
 			@timesAttackedContinuously = 0
 		end
 
-		if @timesAttackedContinuously > 1
+		if @timesAttackedContinuously > 2
 			@direction = :backward
 			@direction2 = :forward
 			
@@ -68,10 +68,21 @@ class Player
 
 			path = warrior.look(@direction)
 
-			puts path
+			puts warrior.feel(@direction).empty?
+
+
 
 			if isEmptyPath(path) 
-			 	warrior.walk!(@direction) 
+				if warrior.feel.captive?
+					warrior.rescue!				
+				else
+					if !warrior.feel(@direction).empty?
+						warrior.attack!
+					else
+			 			warrior.walk!(@direction) 
+						@timesAttackedContinuously = 0
+					end
+				end
 			else
 					warrior.shoot!(@direction) 
 				
@@ -97,6 +108,7 @@ class Player
 				return true
 				
 			end
+			
 			if !space.empty? 
 				return false
 			end
@@ -112,9 +124,13 @@ class Player
 			warrior.rest!
 
 		else
-
-			warrior.walk!(@direction2)
-			@stepsBack += 1
+			if warrior.feel(@direction2).enemy?
+				warrior.attack!
+			else
+				warrior.walk!(@direction2)
+				@stepsBack += 1
+					
+			end
 
 		end
 
